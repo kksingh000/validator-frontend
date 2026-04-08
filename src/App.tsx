@@ -158,7 +158,7 @@ const Icons = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; bg: string; color: string; icon: (props: any) => JSX.Element }> = {
+  const map: Record<string, { label: string; bg: string; color: string; icon: (props: any) => React.ReactNode }> = {
     completed: { label: "Completed", bg: T.accentDim, color: T.accent, icon: Icons.check },
     analyzing: { label: "Analyzing…", bg: T.blueDim, color: T.blue, icon: Icons.clock },
     pending: { label: "Pending", bg: T.warnDim, color: T.warn, icon: Icons.clock },
@@ -234,7 +234,7 @@ function Spinner({ size = 20 }: { size?: number }) {
   );
 }
 
-function EmptyState({ icon: Ic, title, subtitle, action }: { icon: (props: any) => JSX.Element; title: string; subtitle: string; action?: React.ReactNode }) {
+function EmptyState({ icon: Ic, title, subtitle, action }: { icon: (props: any) => React.ReactNode; title: string; subtitle: string; action?: React.ReactNode }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -370,7 +370,7 @@ function TextArea({ label, ...props }: { label?: string; [key: string]: any }) {
   );
 }
 
-function SectionHeader({ icon: Ic, title, color = T.accent }: { icon: (props: any) => JSX.Element; title: string; color?: string }) {
+function SectionHeader({ icon: Ic, title, color = T.accent }: { icon: (props: any) => React.ReactNode; title: string; color?: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
       <div style={{
@@ -855,7 +855,7 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
                   </div>
                 ))}
               </div>
-              {a.market_overview.trends?.length > 0 && (
+              {(a.market_overview.trends?.length ?? 0) > 0 && (
                 <>
                   <span style={{ fontSize: 12, fontWeight: 700, color: T.warn, textTransform: "uppercase", letterSpacing: 1 }}>Key Trends</span>
                   <TagList items={a.market_overview.trends} color={T.warn} />
@@ -864,11 +864,11 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
             </Card>
           )}
 
-          {a.competitors?.length > 0 && (
+          {(a.competitors?.length ?? 0) > 0 && (
             <Card>
               <SectionHeader icon={Icons.target} title="Competitor Landscape" color={T.danger} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {a.competitors.map((c, i) => <CompetitorCard key={i} comp={c} />)}
+                {a.competitors!.map((c, i) => <CompetitorCard key={i} comp={c} />)}
               </div>
             </Card>
           )}
@@ -877,13 +877,13 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
             <Card>
               <SectionHeader icon={Icons.code} title="Suggested Tech Stack" color={T.blue} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 16 }}>
-                {[
+                {([
                   ["Frontend", a.suggested_tech_stack.frontend],
                   ["Backend", a.suggested_tech_stack.backend],
                   ["Database", a.suggested_tech_stack.database],
                   ["Infrastructure", a.suggested_tech_stack.infrastructure],
                   ["AI / ML", a.suggested_tech_stack.ai_ml],
-                ].map(([label, items]) => items?.length > 0 && (
+                ] as [string, string[] | undefined][]).map(([label, items]) => items && items.length > 0 && (
                   <div key={label}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: T.textDim, textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
                     <div style={{ marginTop: 8 }}>
@@ -907,11 +907,11 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
             </Card>
           )}
 
-          {a.recommendations?.length > 0 && (
+          {(a.recommendations?.length ?? 0) > 0 && (
             <Card>
               <SectionHeader icon={Icons.check} title="Recommendations" />
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {a.recommendations.map((r, i) => (
+                {a.recommendations!.map((r, i) => (
                   <div key={i} style={{
                     display: "flex", gap: 12, alignItems: "flex-start",
                     padding: 14, background: T.surfaceAlt, borderRadius: T.radiusSm,
