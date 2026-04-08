@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 /* ═══════════════════════════════════════════════
    CONFIG — point this at your Express backend
@@ -9,31 +9,33 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
    DESIGN TOKENS
    ═══════════════════════════════════════════════ */
 const T = {
-  bg: "#0B0F1A",
-  surface: "#121829",
-  surfaceAlt: "#1A2137",
-  border: "#252E45",
-  borderLight: "#2E3A56",
-  text: "#E2E8F0",
-  textMuted: "#8892A8",
-  textDim: "#5A6478",
-  accent: "#3ECFB4",
-  accentDim: "rgba(62,207,180,0.12)",
-  accentGlow: "rgba(62,207,180,0.25)",
+  bg: "#0F1117",
+  surface: "#181B25",
+  surfaceAlt: "#1E2230",
+  border: "#2A2F3E",
+  borderLight: "#353B4E",
+  text: "#F1F3F8",
+  textMuted: "#9BA3B8",
+  textDim: "#6B7389",
+  accent: "#4FD1B5",
+  accentDim: "rgba(79,209,181,0.12)",
+  accentGlow: "rgba(79,209,181,0.3)",
   danger: "#F06B6B",
   dangerDim: "rgba(240,107,107,0.12)",
   warn: "#F0C45A",
   warnDim: "rgba(240,196,90,0.12)",
-  blue: "#5B8DEF",
-  blueDim: "rgba(91,141,239,0.12)",
-  radius: "12px",
-  radiusSm: "8px",
+  blue: "#6C9EFF",
+  blueDim: "rgba(108,158,255,0.12)",
+  purple: "#A78BFA",
+  purpleDim: "rgba(167,139,250,0.12)",
+  radius: "14px",
+  radiusSm: "10px",
   font: "'DM Sans', 'Segoe UI', sans-serif",
   fontMono: "'JetBrains Mono', 'Fira Code', monospace",
 };
 
 const GLOBAL_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -47,10 +49,17 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: ${T.borderLight}; }
+
+::selection { background: ${T.accentDim}; color: ${T.accent}; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 @keyframes pulse {
   0%, 100% { opacity: 1; }
@@ -62,6 +71,9 @@ body {
 }
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+@keyframes scoreGrow {
+  from { stroke-dashoffset: var(--circ); }
 }
 `;
 
@@ -261,13 +273,15 @@ function Card({ children, style = {}, hover = false, ...props }: { children: Rea
       onMouseEnter={() => hover && setHovered(true)}
       onMouseLeave={() => hover && setHovered(false)}
       style={{
-        background: T.surface,
+        background: `linear-gradient(145deg, ${T.surface}, ${T.surfaceAlt}44)`,
         border: `1px solid ${hovered ? T.accentGlow : T.border}`,
         borderRadius: T.radius,
-        padding: 24,
-        transition: "all 0.25s ease",
-        transform: hovered ? "translateY(-2px)" : "none",
-        boxShadow: hovered ? `0 8px 32px ${T.accentDim}` : "none",
+        padding: 28,
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        transform: hovered ? "translateY(-3px)" : "none",
+        boxShadow: hovered
+          ? `0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px ${T.accentGlow}`
+          : "0 2px 8px rgba(0,0,0,0.15)",
         ...style,
       }}
       {...props}
@@ -372,16 +386,18 @@ function TextArea({ label, ...props }: { label?: string; [key: string]: any }) {
 
 function SectionHeader({ icon: Ic, title, color = T.accent }: { icon: (props: any) => React.ReactNode; title: string; color?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 10,
+        width: 38, height: 38, borderRadius: 10,
         background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
       }}>
         <Ic size={18} color={color} />
       </div>
       <h3 style={{
-        fontSize: 16, fontWeight: 700, letterSpacing: 0.3,
+        fontSize: 17, fontWeight: 700, letterSpacing: 0.2,
         fontFamily: "'Playfair Display', serif",
+        color: T.text,
       }}>{title}</h3>
     </div>
   );
@@ -603,30 +619,33 @@ function DashboardPage({ onNavigate }: { onNavigate: (page: Page, id?: string | 
         </Button>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {ideas.map((idea, i) => (
           <Card key={idea.id} hover style={{
             cursor: "pointer",
-            animationDelay: `${i * 0.05}s`,
+            animationDelay: `${i * 0.06}s`,
             animation: "fadeUp 0.4s ease both",
           }}
             onClick={() => onNavigate("detail", idea.id)}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <h3 style={{ fontSize: 17, fontWeight: 700 }}>{idea.title}</h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: T.text }}>{idea.title}</h3>
                   <StatusBadge status={idea.status} />
                 </div>
                 <p style={{
-                  color: T.textMuted, fontSize: 14, lineHeight: 1.5,
+                  color: T.textMuted, fontSize: 14, lineHeight: 1.6,
                   overflow: "hidden", textOverflow: "ellipsis",
                   display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
                 }}>
                   {idea.description}
                 </p>
-                <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
+                <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center" }}>
                   {idea.industry && (
-                    <span style={{ fontSize: 12, color: T.textDim }}>
+                    <span style={{
+                      fontSize: 12, color: T.accent, padding: "3px 10px",
+                      background: T.accentDim, borderRadius: 12, fontWeight: 500,
+                    }}>
                       {idea.industry}
                     </span>
                   )}
@@ -637,11 +656,11 @@ function DashboardPage({ onNavigate }: { onNavigate: (page: Page, id?: string | 
               </div>
 
               <div style={{ display: "flex", gap: 4, marginLeft: 16, flexShrink: 0 }}>
-                <Button variant="ghost" style={{ padding: 8 }}
+                <Button variant="ghost" style={{ padding: 8, borderRadius: 8 }}
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onNavigate("detail", idea.id); }}>
                   <Icons.eye size={16} color={T.textMuted} />
                 </Button>
-                <Button variant="ghost" style={{ padding: 8 }}
+                <Button variant="ghost" style={{ padding: 8, borderRadius: 8 }}
                   loading={deleting === idea.id}
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); handleDelete(idea.id); }}>
                   <Icons.trash size={16} color={T.danger} />
@@ -726,26 +745,41 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
         <Icons.back size={16} /> Back to Dashboard
       </Button>
 
-      <Card style={{ marginBottom: 24, position: "relative", overflow: "hidden" }}>
+      <Card style={{ marginBottom: 28, position: "relative", overflow: "hidden", padding: "36px 32px" }}>
         <div style={{
-          position: "absolute", top: 0, right: 0, width: 200, height: 200,
-          background: `radial-gradient(circle at top right, ${T.accentDim}, transparent 70%)`,
+          position: "absolute", top: 0, right: 0, width: 300, height: 300,
+          background: `radial-gradient(circle at top right, ${T.accentDim}, ${T.blueDim}44 40%, transparent 70%)`,
           pointerEvents: "none",
         }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div>
-            <StatusBadge status={idea.status} />
-            <h1 style={{
-              fontSize: 28, fontWeight: 800, marginTop: 12,
-              fontFamily: "'Playfair Display', serif",
-            }}>{idea.title}</h1>
-            <p style={{ color: T.textMuted, fontSize: 15, lineHeight: 1.6, marginTop: 8, maxWidth: 600 }}>
-              {idea.description}
-            </p>
-            <div style={{ display: "flex", gap: 20, marginTop: 14 }}>
-              {idea.industry && <span style={{ fontSize: 13, color: T.textDim, padding: "4px 10px", background: T.surfaceAlt, borderRadius: 6 }}>{idea.industry}</span>}
-              {idea.target_market && <span style={{ fontSize: 13, color: T.textDim, padding: "4px 10px", background: T.surfaceAlt, borderRadius: 6 }}>{idea.target_market}</span>}
-            </div>
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, width: 200, height: 200,
+          background: `radial-gradient(circle at bottom left, ${T.purpleDim}44, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <StatusBadge status={idea.status} />
+          <h1 style={{
+            fontSize: 32, fontWeight: 800, marginTop: 14,
+            fontFamily: "'Playfair Display', serif",
+            color: T.text,
+            letterSpacing: -0.3,
+          }}>{idea.title}</h1>
+          <p style={{ color: T.textMuted, fontSize: 15, lineHeight: 1.7, marginTop: 10, maxWidth: 650 }}>
+            {idea.description}
+          </p>
+          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+            {idea.industry && (
+              <span style={{
+                fontSize: 13, color: T.accent, padding: "5px 14px",
+                background: T.accentDim, borderRadius: 20, fontWeight: 500,
+              }}>{idea.industry}</span>
+            )}
+            {idea.target_market && (
+              <span style={{
+                fontSize: 13, color: T.blue, padding: "5px 14px",
+                background: T.blueDim, borderRadius: 20, fontWeight: 500,
+              }}>{idea.target_market}</span>
+            )}
           </div>
         </div>
       </Card>
@@ -776,40 +810,40 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
 
       {a && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-            <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28 }}>
-              <ScoreRing score={a.profitability_score} size={110} />
-              <span style={{ fontSize: 12, color: T.textMuted, marginTop: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
+            <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", textAlign: "center" }}>
+              <ScoreRing score={a.profitability_score} size={120} />
+              <span style={{ fontSize: 11, color: T.textMuted, marginTop: 14, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600 }}>
                 Profitability
               </span>
             </Card>
-            <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 28 }}>
+            <Card style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", textAlign: "center" }}>
               <RiskBadge level={a.risk_level} />
-              <div style={{ marginTop: 16 }}>
+              <div style={{ marginTop: 18 }}>
                 {a.risk_factors?.slice(0, 3).map((r, i) => (
-                  <p key={i} style={{ fontSize: 12, color: T.textMuted, marginTop: 6, textAlign: "center", lineHeight: 1.4 }}>
-                    • {r}
+                  <p key={i} style={{ fontSize: 12, color: T.textMuted, marginTop: 8, textAlign: "center", lineHeight: 1.5 }}>
+                    <span style={{ color: T.warn, marginRight: 4 }}>&#8226;</span> {r}
                   </p>
                 ))}
               </div>
             </Card>
-            <Card style={{ padding: 28 }}>
+            <Card style={{ padding: "28px 24px" }}>
               <SectionHeader icon={Icons.star} title="Verdict" />
-              <p style={{ fontSize: 14, color: T.textMuted, lineHeight: 1.7 }}>{a.verdict}</p>
+              <p style={{ fontSize: 14, color: T.textMuted, lineHeight: 1.8 }}>{a.verdict}</p>
             </Card>
           </div>
 
           <Card>
             <SectionHeader icon={Icons.target} title="Problem Summary" />
-            <p style={{ fontSize: 15, color: T.textMuted, lineHeight: 1.7 }}>{a.problem_summary}</p>
+            <p style={{ fontSize: 15, color: T.textMuted, lineHeight: 1.8 }}>{a.problem_summary}</p>
           </Card>
 
           {a.customer_persona && (
             <Card>
               <SectionHeader icon={Icons.users} title="Customer Persona" color={T.blue} />
               <div style={{
-                display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 24px",
-                fontSize: 14,
+                display: "grid", gridTemplateColumns: "140px 1fr", gap: "12px 24px",
+                fontSize: 14, alignItems: "center",
               }}>
                 {[
                   ["Name", a.customer_persona.name],
@@ -817,10 +851,10 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
                   ["Occupation", a.customer_persona.occupation],
                   ["Demographics", a.customer_persona.demographics],
                 ].map(([k, v]) => v && (
-                  <>
-                    <span key={`${k}-label`} style={{ color: T.textDim, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 }}>{k}</span>
-                    <span key={`${k}-value`} style={{ color: T.textMuted }}>{v}</span>
-                  </>
+                  <React.Fragment key={`${k}-row`}>
+                    <span style={{ color: T.textDim, fontWeight: 600, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8 }}>{k}</span>
+                    <span style={{ color: T.text, fontWeight: 400 }}>{v}</span>
+                  </React.Fragment>
                 ))}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 20 }}>
@@ -955,41 +989,48 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg }}>
+    <div style={{
+      minHeight: "100vh",
+      background: `${T.bg}`,
+      backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -20%, ${T.accentDim}44, transparent)`,
+    }}>
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "12px 32px",
-        background: `${T.bg}e6`,
-        backdropFilter: "blur(16px)",
-        borderBottom: `1px solid ${T.border}`,
+        padding: "14px 36px",
+        background: `${T.bg}dd`,
+        backdropFilter: "blur(20px) saturate(1.2)",
+        borderBottom: `1px solid ${T.border}66`,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
-          onClick={() => navigate("dashboard")}> 
+        <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+          onClick={() => navigate("dashboard")}>
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
+            width: 34, height: 34, borderRadius: 9,
             background: `linear-gradient(135deg, ${T.accent}, ${T.blue})`,
             display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: `0 4px 12px ${T.accentDim}`,
           }}>
-            <Icons.rocket size={17} color={T.bg} />
+            <Icons.rocket size={17} color="#fff" />
           </div>
           <span style={{
-            fontSize: 17, fontWeight: 800,
+            fontSize: 18, fontWeight: 800,
             fontFamily: "'Playfair Display', serif",
             letterSpacing: -0.3,
+            background: `linear-gradient(135deg, ${T.text}, ${T.accent})`,
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
           }}>IdeaValidator</span>
         </div>
 
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           <Button variant={page === "dashboard" ? "secondary" : "ghost"}
             onClick={() => navigate("dashboard")}
-            style={{ padding: "7px 14px", fontSize: 13 }}>
+            style={{ padding: "8px 16px", fontSize: 13, borderRadius: 8 }}>
             <Icons.list size={15} /> Dashboard
           </Button>
           <Button variant={page === "submit" ? "secondary" : "ghost"}
             onClick={() => navigate("submit")}
-            style={{ padding: "7px 14px", fontSize: 13 }}>
-            <Icons.plus size={15} /> Submit
+            style={{ padding: "8px 16px", fontSize: 13, borderRadius: 8 }}>
+            <Icons.plus size={15} /> New Idea
           </Button>
         </div>
       </nav>
