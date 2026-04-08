@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 /* ═══════════════════════════════════════════════
    CONFIG — point this at your Express backend
    ═══════════════════════════════════════════════ */
-const API_BASE = "http://localhost:3001/api";
+const API_BASE = "http://localhost:3000/api";
 
 /* ═══════════════════════════════════════════════
    DESIGN TOKENS
@@ -667,7 +667,11 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
     setError(null);
     try {
       const res = await api(`/ideas/${id}`);
-      setIdea(res.data);
+      const idea = res.data;
+      if (idea && typeof idea.analysis === "string") {
+        try { idea.analysis = JSON.parse(idea.analysis); } catch { idea.analysis = null; }
+      }
+      setIdea(idea);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -682,7 +686,11 @@ function DetailPage({ id, onNavigate }: { id: string | null; onNavigate: (page: 
     setRetrying(true);
     try {
       const res = await api(`/ideas/${id}/retry`, { method: "POST" });
-      setIdea(res.data);
+      const idea = res.data;
+      if (idea && typeof idea.analysis === "string") {
+        try { idea.analysis = JSON.parse(idea.analysis); } catch { idea.analysis = null; }
+      }
+      setIdea(idea);
     } catch (err: any) {
       setError(err.message);
     } finally {

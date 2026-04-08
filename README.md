@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# Startup Idea Validator - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript single-page application for submitting startup ideas and viewing AI-generated validation reports. Features a dark-themed, modern UI with animated transitions and a comprehensive report layout.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Layer       | Technology               |
+| ----------- | ------------------------ |
+| Framework   | React 19 + TypeScript    |
+| Build Tool  | Vite 8                   |
+| Styling     | CSS-in-JS (inline)       |
+| Font        | Playfair Display (serif) |
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Submit Page** — Form to enter idea title, description, industry, and target market
+- **Dashboard** — Lists all submitted ideas with status badges, timestamps, and quick actions
+- **Detail Page** — Full AI report with:
+  - Profitability score ring (animated SVG)
+  - Risk level badge with risk factors
+  - Verdict summary
+  - Problem summary
+  - Customer persona (name, age, occupation, pain points, goals)
+  - Market overview (TAM, growth rate, trends)
+  - Competitor landscape (strengths/weaknesses cards)
+  - Suggested tech stack with rationale
+  - Profitability analysis
+  - Actionable recommendations
 
-## Expanding the ESLint configuration
+## Installation & Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Clone & install dependencies
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd client
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configure API URL
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The frontend connects to the backend at `http://localhost:3000/api` by default. To change this, update the `API_BASE` constant in `src/App.tsx` (line 6).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 3. Start the dev server
+
+```bash
+npm run dev
 ```
+
+Frontend runs at `http://localhost:5173`.
+
+### 4. Build for production
+
+```bash
+npm run build
+```
+
+Output goes to the `dist/` folder, ready for deployment to Vercel or Netlify.
+
+## Project Structure
+
+```
+src/
+└── App.tsx        # Single-file application containing:
+                   #   - Theme constants & design tokens
+                   #   - Reusable UI components (Button, Card, StatusBadge, etc.)
+                   #   - ScoreRing (animated SVG profitability gauge)
+                   #   - RiskBadge (color-coded risk indicator)
+                   #   - SubmitPage (idea submission form)
+                   #   - DashboardPage (idea listing with pagination)
+                   #   - DetailPage (full AI analysis report)
+                   #   - App root with client-side routing
+```
+
+## Connecting to the Backend
+
+Ensure the backend server is running at `http://localhost:3000` before using the frontend. The app makes the following API calls:
+
+| Action         | Method | Endpoint                |
+| -------------- | ------ | ----------------------- |
+| Submit idea    | POST   | `/api/ideas`            |
+| List ideas     | GET    | `/api/ideas?limit=50`   |
+| View report    | GET    | `/api/ideas/:id`        |
+| Delete idea    | DELETE | `/api/ideas/:id`        |
+| Retry analysis | POST   | `/api/ideas/:id/retry`  |
